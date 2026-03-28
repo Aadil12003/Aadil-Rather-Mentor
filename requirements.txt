@@ -2,3 +2,4 @@ streamlit==1.41.0
 openai==1.57.0
 pydantic==2.12.5
 pydantic-core==2.41.5
+fpdf2==2.7.9
