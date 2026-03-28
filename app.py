@@ -1,58 +1,120 @@
+import warnings
+warnings.filterwarnings("ignore")
 import streamlit as st
 from openai import OpenAI
+import io
 
-st.set_page_config(page_title="Hinglish Mentor", page_icon="📚")
+st.set_page_config(page_title="Aadil Mentor", page_icon="🎓", layout="wide")
 
-st.title("📚 Hinglish Mentor")
-st.caption("Complex topics samjho — simple Hinglish mein!")
+st.title("🎓 Aadil Mentor")
+st.caption("Har student ka personal AI mentor — Hinglish mein samjho, English mein likho!")
 
 client = OpenAI(
     base_url="https://integrate.api.nvidia.com/v1",
     api_key=st.secrets["NVIDIA_API_KEY"]
 )
 
-SYSTEM_PROMPT = """You are an expert Indian study mentor who helps students 
-preparing for Board exams (Class 11-12), College/University, and competitive 
-exams like JEE, NEET, and UPSC.
+SUBJECTS = [
+    # Science & Medical
+    "Physics", "Chemistry", "Biology", "Mathematics",
+    "Anatomy", "Physiology", "Pharmacology", "Pathology",
+    "Microbiology", "Biochemistry", "Nursing Fundamentals",
+    "Medical Surgical Nursing", "Pediatric Nursing",
+    "Obstetric Nursing", "Community Health Nursing",
+    "MBBS General Medicine", "Surgery", "Psychiatry",
+    # Competitive Exams
+    "JEE Mathematics", "JEE Physics", "JEE Chemistry",
+    "NEET Biology", "NEET Physics", "NEET Chemistry",
+    "UPSC History", "UPSC Geography", "UPSC Polity",
+    "UPSC Economics", "UPSC Current Affairs",
+    # Arts & Humanities
+    "History", "Geography", "Political Science",
+    "Economics", "Sociology", "Psychology",
+    "Philosophy", "English Literature", "Hindi Literature",
+    # Creative & Design
+    "Art & Drawing", "Jewellery Design", "Fashion Design",
+    "Graphic Design", "Interior Design",
+    # Technology
+    "Computer Science", "Programming Basics",
+    "Artificial Intelligence", "Data Science",
+    # General
+    "General Knowledge", "Current Affairs", "English Grammar"
+]
 
-Your communication style:
-- Always respond in Hinglish (mix of Hindi and English)
-- Use simple, conversational language like a friendly Indian tutor
-- Break complex topics into easy chunks
-- Use Indian examples and analogies students can relate to
-- Never sound like AI - sound like a helpful dost (friend) who knows everything
-- Use phrases like "dekho", "samjho", "basically", "simple shabdon mein"
+LEVEL_PROMPTS = {
+    "Class 10 aur neeche (School)": {
+        "length": "very short and simple",
+        "words": "100-150 words maximum",
+        "style": "Use very simple words. Short sentences. Basic examples only."
+    },
+    "Class 11-12 (Board Exams)": {
+        "length": "medium and detailed",
+        "words": "200-300 words",
+        "style": "Include key points, definitions, and examples. Board exam format."
+    },
+    "College/University": {
+        "length": "detailed and comprehensive",
+        "words": "400-500 words",
+        "style": "In-depth explanation with theory, examples, and analysis."
+    },
+    "Competitive Exams (JEE/NEET/UPSC)": {
+        "length": "very detailed and precise",
+        "words": "400-600 words",
+        "style": "Include all key facts, formulas, diagrams description, and exam tips."
+    }
+}
 
-You have THREE modes based on what student asks:
+def get_system_prompt(level, subject):
+    level_info = LEVEL_PROMPTS[level]
+    return f"""You are Aadil Mentor — an expert Indian study mentor helping {level} students with {subject}.
 
-1. EXPLAIN MODE: When student asks to explain a topic
-- Explain in simple Hinglish step by step
-- Use relatable Indian examples
-- End with "Kya samajh aaya? Koi doubt ho toh pucho!"
+STRICT RULES:
+1. ALWAYS start with a Hinglish explanation (mix of Hindi and English)
+2. ALWAYS end with a section called "✅ EXAM READY ANSWER" in pure English
+3. The exam answer must be {level_info['length']} — exactly {level_info['words']}
+4. {level_info['style']}
+5. Never sound like AI — sound like a friendly Indian tutor (dost)
 
-2. ANSWER MODE: When student asks for exam answer
-- Give a proper structured exam-ready answer in English
-- Format it like a model answer with points
-- End with Hinglish tip: "Yeh answer exactly aise likhna exam mein!"
+YOUR RESPONSE FORMAT — ALWAYS follow this exactly:
 
-3. QUIZ MODE: When student asks for quiz or practice
-- Ask 5 multiple choice questions on the topic
-- After each answer tell them if correct or wrong in Hinglish
-- Give final score at end
+---
+🗣️ HINGLISH EXPLANATION:
+[Explain topic in simple Hinglish with Indian examples. Use "dekho", "samjho", "basically" etc.]
 
-Always detect which mode is needed from student's question automatically.
-Never mix modes. Always be encouraging and never make student feel stupid."""
+---
+✅ EXAM READY ANSWER (Write this exactly in your exam):
+[Pure English. Proper structured answer. {level_info['words']}. No Hindi here.]
+
+---
+💡 EXAM TIP:
+[One line tip in Hinglish about this topic for exam]
+---
+
+MODES — detect automatically:
+- If student asks to EXPLAIN → give full explanation + exam answer
+- If student asks for EXAM ANSWER only → skip to exam ready answer directly  
+- If student asks for QUIZ → give 5 MCQs, then score, then exam answer for the topic
+
+IMPORTANT: Never skip the EXAM READY ANSWER section. Ever."""
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "notes" not in st.session_state:
+    st.session_state.notes = []
 
-# Subject selector
-subject = st.selectbox(
-    "Apna subject choose karo:",
-    ["Physics", "Chemistry", "Biology", "Mathematics", 
-     "History", "Geography", "Economics", "Political Science",
-     "English", "Computer Science", "General Knowledge"]
-)
+col1, col2 = st.columns([1, 1])
+
+with col1:
+    level = st.selectbox(
+        "📊 Apna level choose karo:",
+        list(LEVEL_PROMPTS.keys())
+    )
+
+with col2:
+    subject = st.selectbox(
+        "📚 Subject choose karo:",
+        SUBJECTS
+    )
 
 st.divider()
 
@@ -60,10 +122,10 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("Topic pucho, answer maango, ya quiz do..."):
-    full_prompt = f"Subject: {subject}\nStudent question: {prompt}"
-    
+if prompt := st.chat_input("Topic pucho, exam answer maango, ya quiz do..."):
+    full_prompt = f"Subject: {subject}\nLevel: {level}\nStudent question: {prompt}"
     st.session_state.messages.append({"role": "user", "content": prompt})
+    
     with st.chat_message("user"):
         st.markdown(prompt)
 
@@ -71,14 +133,14 @@ if prompt := st.chat_input("Topic pucho, answer maango, ya quiz do..."):
         stream = client.chat.completions.create(
             model="meta/llama-3.3-70b-instruct",
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                *[{"role": m["role"], "content": m["content"]} 
+                {"role": "system", "content": get_system_prompt(level, subject)},
+                *[{"role": m["role"], "content": m["content"]}
                   for m in st.session_state.messages[:-1]],
                 {"role": "user", "content": full_prompt}
             ],
             temperature=0.7,
             top_p=0.9,
-            max_tokens=1024,
+            max_tokens=1500,
             stream=True
         )
         response = st.write_stream(
@@ -86,10 +148,43 @@ if prompt := st.chat_input("Topic pucho, answer maango, ya quiz do..."):
             for chunk in stream
             if chunk.choices[0].delta.content
         )
+    
     st.session_state.messages.append(
         {"role": "assistant", "content": response}
     )
+    st.session_state.notes.append({
+        "subject": subject,
+        "level": level,
+        "question": prompt,
+        "answer": response
+    })
 
-if st.button("🔄 New Topic / Clear Chat"):
-    st.session_state.messages = []
-    st.rerun()
+st.divider()
+
+col1, col2 = st.columns([1, 1])
+
+with col1:
+    if st.button("🔄 Naya Topic / Chat Clear Karo"):
+        st.session_state.messages = []
+        st.rerun()
+
+with col2:
+    if st.session_state.notes:
+        notes_text = f"AADIL MENTOR — STUDY NOTES\n"
+        notes_text += f"{'='*50}\n\n"
+        
+        for i, note in enumerate(st.session_state.notes, 1):
+            notes_text += f"NOTE {i}\n"
+            notes_text += f"Subject: {note['subject']}\n"
+            notes_text += f"Level: {note['level']}\n"
+            notes_text += f"Question: {note['question']}\n"
+            notes_text += f"{'-'*40}\n"
+            notes_text += f"{note['answer']}\n"
+            notes_text += f"{'='*50}\n\n"
+        
+        st.download_button(
+            label="📥 Notes Download Karo (.txt)",
+            data=notes_text,
+            file_name=f"aadil_mentor_notes_{subject}.txt",
+            mime="text/plain"
+        )
