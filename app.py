@@ -71,45 +71,6 @@ st.markdown("""
     margin-bottom: 1.5rem;
 }
 
-.section-hinglish {
-    background: #1c2333;
-    border-left: 4px solid #58a6ff;
-    border-radius: 0 10px 10px 0;
-    padding: 1rem 1.2rem;
-    margin: 1rem 0;
-    color: #e6edf3;
-}
-
-.section-visual {
-    background: #1a1f2e;
-    border-left: 4px solid #3fb950;
-    border-radius: 0 10px 10px 0;
-    padding: 1rem 1.2rem;
-    margin: 1rem 0;
-    font-family: 'Courier New', monospace;
-    color: #e6edf3;
-    white-space: pre-wrap;
-}
-
-.section-exam {
-    background: #1f2937;
-    border-left: 4px solid #f0c040;
-    border-radius: 0 10px 10px 0;
-    padding: 1rem 1.2rem;
-    margin: 1rem 0;
-    color: #e6edf3;
-}
-
-.section-tip {
-    background: #1f1a00;
-    border-left: 4px solid #d29922;
-    border-radius: 0 10px 10px 0;
-    padding: 0.8rem 1.2rem;
-    margin: 0.8rem 0;
-    color: #e6edf3;
-    font-size: 0.95rem;
-}
-
 div[data-testid="stChatMessage"] {
     background: #161b22 !important;
     border: 1px solid #30363d !important;
@@ -159,13 +120,8 @@ div[data-testid="stChatMessage"] {
     color: #e6edf3 !important;
 }
 
-p, li, span, div {
-    color: #e6edf3;
-}
-
-h1, h2, h3, h4 {
-    color: #e6edf3;
-}
+p, li, span, div { color: #e6edf3; }
+h1, h2, h3, h4 { color: #e6edf3; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -225,47 +181,86 @@ def get_system_prompt(level, subject):
     info = LEVELS[level]
     return f"""You are Aadil Mentor — expert Indian study mentor for {level} students studying {subject}.
 
-ALWAYS structure EVERY response using EXACTLY these headers — never skip any:
+ALWAYS structure EVERY response using EXACTLY these four sections. Never skip any:
 
 🗣️ HINGLISH EXPLANATION:
-[Explain in simple Hinglish. Conversational tone. Indian examples. Use dekho, samjho, basically etc.]
+[Explain in simple Hinglish. Conversational tone like a friendly Indian tutor.
+Use Indian examples. Use words like dekho, samjho, basically, simple shabdon mein.
+Never sound like AI. Always encouraging.]
 
 📊 VISUAL OVERVIEW:
-[ALWAYS create a clear visual using ASCII art. Examples:
-For processes: Step1 → Step2 → Step3 → Result
-For comparisons: use a table with | separators
-For hierarchies: use indented tree structure
-For cycles: use numbered loop
-For formulas: show formula clearly with variables explained below
-Make it genuinely useful and clear. Minimum 6 lines.]
+[MANDATORY — Always create ONE of these based on topic type:
+
+FOR PROCESSES: Numbered flow
+1. Step One → 2. Step Two → 3. Step Three → ✅ Final Result
+
+FOR COMPARISONS: Proper markdown table
+| Feature      | Option A     | Option B     |
+|-------------|-------------|-------------|
+| Point 1     | Detail       | Detail       |
+| Point 2     | Detail       | Detail       |
+| Point 3     | Detail       | Detail       |
+
+FOR DEFINITIONS: Structured breakdown
+Term → Meaning → Example → Used When
+
+FOR CYCLES: Loop format
+Start → Phase 1 → Phase 2 → Phase 3 → Back to Start ↺
+
+FOR FORMULAS: Clear formula display
+Formula: A = B × C
+Where:
+  A = explanation
+  B = explanation  
+  C = explanation
+Example: show with real numbers
+
+FOR CLASSIFICATIONS: Tree structure
+Main Topic
+├── Category 1
+│   ├── Sub point a
+│   └── Sub point b
+├── Category 2
+│   ├── Sub point a
+│   └── Sub point b
+└── Category 3
+
+Minimum 8 lines. Always present. Always meaningful for the topic.]
 
 ✅ EXAM READY ANSWER:
-[Pure English ONLY. {info['words']}. {info['style']}
-Structured with clear numbered points.
-No Hindi. No casual language. Exam perfect.]
+[PURE ENGLISH ONLY. No Hindi. No Hinglish.
+{info['words']}. {info['style']}
+Write as proper exam answer with:
+- Clear introduction sentence
+- Numbered or bulleted key points
+- Conclusion sentence
+This is what student will write word for word in exam.]
 
 💡 EXAM TIP:
-[One sharp tip in Hinglish for scoring in exam on this topic]
+[One sharp specific tip in Hinglish for scoring marks on this exact topic in exam]
 
-RULES:
-- Never skip any section ever
-- Visual must always be present and meaningful
-- Exam answer always pure English
-- Answer length: {info['words']}
-- For QUIZ: give 5 MCQs → score → then full exam answer
-- Be encouraging always"""
+STRICT RULES:
+- Never skip any of the 4 sections
+- Visual must always be present and topic-relevant
+- Exam answer must always be pure English
+- Answer length must be exactly: {info['words']}
+- For QUIZ request: give 5 MCQs first → show score → then give full exam answer
+- Always be warm and encouraging like a good Indian teacher"""
 
 def generate_pdf(notes):
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
+
     pdf.set_font("Helvetica", "B", 22)
     pdf.set_text_color(240, 192, 64)
     pdf.cell(0, 15, "AADIL MENTOR - STUDY NOTES", ln=True, align="C")
+
     pdf.set_font("Helvetica", "", 10)
     pdf.set_text_color(100, 100, 100)
     pdf.cell(0, 8, "Your Personal AI Study Guide", ln=True, align="C")
     pdf.ln(5)
+
     pdf.set_draw_color(240, 192, 64)
     pdf.set_line_width(0.8)
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())
@@ -275,16 +270,19 @@ def generate_pdf(notes):
         pdf.set_font("Helvetica", "B", 13)
         pdf.set_text_color(240, 192, 64)
         pdf.cell(0, 10, f"NOTE {i}: {note['subject']}", ln=True)
+
         pdf.set_font("Helvetica", "", 9)
         pdf.set_text_color(120, 120, 120)
         pdf.cell(0, 6, f"Level: {note['level']}", ln=True)
         pdf.cell(0, 6, f"Q: {note['question']}", ln=True)
         pdf.ln(3)
+
         clean = re.sub(r'[^\x00-\x7F]+', ' ', note['answer'])
         pdf.set_font("Helvetica", "", 10)
         pdf.set_text_color(30, 30, 30)
         pdf.multi_cell(0, 6, clean)
         pdf.ln(5)
+
         pdf.set_draw_color(200, 200, 200)
         pdf.set_line_width(0.3)
         pdf.line(10, pdf.get_y(), 200, pdf.get_y())
@@ -307,11 +305,20 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.markdown(f'<div class="metric-card"><h3>{len(st.session_state.messages)//2}</h3><p>Questions Asked</p></div>', unsafe_allow_html=True)
+    st.markdown(f'''<div class="metric-card">
+        <h3>{len(st.session_state.messages)//2}</h3>
+        <p>Questions Asked</p>
+    </div>''', unsafe_allow_html=True)
 with col2:
-    st.markdown(f'<div class="metric-card"><h3>{len(st.session_state.notes)}</h3><p>Notes Saved</p></div>', unsafe_allow_html=True)
+    st.markdown(f'''<div class="metric-card">
+        <h3>{len(st.session_state.notes)}</h3>
+        <p>Notes Saved</p>
+    </div>''', unsafe_allow_html=True)
 with col3:
-    st.markdown(f'<div class="metric-card"><h3>{subject[:10]}</h3><p>Current Subject</p></div>', unsafe_allow_html=True)
+    st.markdown(f'''<div class="metric-card">
+        <h3>{subject[:10]}</h3>
+        <p>Current Subject</p>
+    </div>''', unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -372,33 +379,8 @@ with col2:
             mime="application/pdf"
         )
     else:
-        st.markdown('<p style="color:#8b949e;text-align:center;font-size:0.9rem">Pehle koi question pucho — phir PDF download hogi!</p>', unsafe_allow_html=True)
-
-📊 VISUAL OVERVIEW:
-```
-
-Replace just that section inside the system prompt with this stronger version:
-```
-📊 VISUAL OVERVIEW:
-[MANDATORY. Always create ONE of these based on topic:
-
-FOR PROCESSES: Show as numbered flow
-1. Step One → 2. Step Two → 3. Step Three → ✅ Result
-
-FOR COMPARISONS: Use a proper table
-| Feature | Option A | Option B |
-|---------|----------|----------|
-| Point 1 | Detail   | Detail   |
-
-FOR DEFINITIONS: Use structured breakdown
-Term → Meaning → Example → Used When
-
-FOR CYCLES: Show as loop
-Start → Phase 1 → Phase 2 → Phase 3 → Back to Start
-
-FOR FORMULAS: Show clearly
-Formula: A = B × C
-Where: A = ?, B = ?, C = ?
-Example: numbers substituted
-
-Minimum 8 lines. Always present. Never skip.]
+        st.markdown(
+            '<p style="color:#8b949e;text-align:center;font-size:0.9rem">'
+            'Pehle koi question pucho — phir PDF download hogi!</p>',
+            unsafe_allow_html=True
+        )
