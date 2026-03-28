@@ -373,3 +373,32 @@ with col2:
         )
     else:
         st.markdown('<p style="color:#8b949e;text-align:center;font-size:0.9rem">Pehle koi question pucho — phir PDF download hogi!</p>', unsafe_allow_html=True)
+
+📊 VISUAL OVERVIEW:
+```
+
+Replace just that section inside the system prompt with this stronger version:
+```
+📊 VISUAL OVERVIEW:
+[MANDATORY. Always create ONE of these based on topic:
+
+FOR PROCESSES: Show as numbered flow
+1. Step One → 2. Step Two → 3. Step Three → ✅ Result
+
+FOR COMPARISONS: Use a proper table
+| Feature | Option A | Option B |
+|---------|----------|----------|
+| Point 1 | Detail   | Detail   |
+
+FOR DEFINITIONS: Use structured breakdown
+Term → Meaning → Example → Used When
+
+FOR CYCLES: Show as loop
+Start → Phase 1 → Phase 2 → Phase 3 → Back to Start
+
+FOR FORMULAS: Show clearly
+Formula: A = B × C
+Where: A = ?, B = ?, C = ?
+Example: numbers substituted
+
+Minimum 8 lines. Always present. Never skip.]
