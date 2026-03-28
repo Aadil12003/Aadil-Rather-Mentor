@@ -1,3 +1,4 @@
 streamlit==1.41.0
 openai==1.57.0
-pydantic==1.10.21
+pydantic==2.12.5
+pydantic-core==2.41.5
