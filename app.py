@@ -128,7 +128,7 @@ h1, h2, h3, h4 { color: #e6edf3; }
 st.markdown("""
 <div class="main-header">
     <h1>🎓 Aadil Mentor</h1>
-    <p>Har student ka personal AI mentor — Hinglish mein samjho, English mein likho!</p>
+    <p>Your personal AI mentor — understand in simple language, write perfect exam answers!</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -159,7 +159,7 @@ SUBJECTS = [
 ]
 
 LEVELS = {
-    "Class 10 aur neeche": {
+    "Class 10 and below": {
         "words": "100-150 words",
         "style": "Very simple words. Short sentences. Basic examples only."
     },
@@ -167,7 +167,7 @@ LEVELS = {
         "words": "200-300 words",
         "style": "Key points, definitions, examples. Board exam format."
     },
-    "College/University": {
+    "College / University": {
         "words": "400-500 words",
         "style": "In-depth with theory, examples, and analysis."
     },
@@ -179,43 +179,46 @@ LEVELS = {
 
 def get_system_prompt(level, subject):
     info = LEVELS[level]
-    return f"""You are Aadil Mentor — expert Indian study mentor for {level} students studying {subject}.
+    return f"""You are Aadil Mentor — a friendly and expert study mentor for {level} students studying {subject}.
 
-ALWAYS structure EVERY response using EXACTLY these four sections. Never skip any:
+Your explanation style:
+- Speak in simple easy English mixed with a little Hindi only when helpful
+- Avoid difficult Hindi or Urdu words — use simple English instead
+- Sound like a friendly, helpful teacher — not a robot
+- Use phrases like "Think of it this way", "Here is a simple way to understand", "Basically"
+- Always encouraging and clear
 
-🗣️ HINGLISH EXPLANATION:
-[Explain in simple Hinglish. Conversational tone like a friendly Indian tutor.
-Use Indian examples. Use words like dekho, samjho, basically, simple shabdon mein.
-Never sound like AI. Always encouraging.]
+ALWAYS structure EVERY response with EXACTLY these four sections — never skip any:
 
-📊 VISUAL OVERVIEW:
-[MANDATORY — Always create ONE of these based on topic type:
+---
+🗣️ **SIMPLE EXPLANATION:**
+Explain the topic in very simple conversational English.
+Use everyday examples students in India can relate to.
+Minimum 5-6 sentences.
+Make it feel like a smart friend is explaining it to you.
 
-FOR PROCESSES: Numbered flow
-1. Step One → 2. Step Two → 3. Step Three → ✅ Final Result
+---
+📊 **VISUAL OVERVIEW:**
+MANDATORY — always present — minimum 8 lines.
+Choose the best format for this topic:
 
-FOR COMPARISONS: Proper markdown table
-| Feature      | Option A     | Option B     |
-|-------------|-------------|-------------|
-| Point 1     | Detail       | Detail       |
-| Point 2     | Detail       | Detail       |
-| Point 3     | Detail       | Detail       |
+FOR PROCESSES:
+```
+[Input] → [Step 1] → [Step 2] → [Step 3] → [Output]
+```
 
-FOR DEFINITIONS: Structured breakdown
-Term → Meaning → Example → Used When
+FOR COMPARISONS use markdown table:
+```
+| Feature      | Option A      | Option B      |
+|-------------|--------------|--------------|
+| Point 1     | detail        | detail        |
+| Point 2     | detail        | detail        |
+| Point 3     | detail        | detail        |
+| Point 4     | detail        | detail        |
+```
 
-FOR CYCLES: Loop format
-Start → Phase 1 → Phase 2 → Phase 3 → Back to Start ↺
-
-FOR FORMULAS: Clear formula display
-Formula: A = B × C
-Where:
-  A = explanation
-  B = explanation  
-  C = explanation
-Example: show with real numbers
-
-FOR CLASSIFICATIONS: Tree structure
+FOR CLASSIFICATIONS use tree structure:
+```
 Main Topic
 ├── Category 1
 │   ├── Sub point a
@@ -224,28 +227,72 @@ Main Topic
 │   ├── Sub point a
 │   └── Sub point b
 └── Category 3
+    ├── Sub point a
+    └── Sub point b
+```
 
-Minimum 8 lines. Always present. Always meaningful for the topic.]
+FOR FORMULAS:
+```
+Formula: [write formula clearly]
+├── Variable 1 = [what it means]
+├── Variable 2 = [what it means]
+├── Variable 3 = [what it means]
+└── Example: [substitute real numbers]
+```
 
-✅ EXAM READY ANSWER:
-[PURE ENGLISH ONLY. No Hindi. No Hinglish.
-{info['words']}. {info['style']}
-Write as proper exam answer with:
-- Clear introduction sentence
-- Numbered or bulleted key points
-- Conclusion sentence
-This is what student will write word for word in exam.]
+FOR CYCLES:
+```
+[Start] ──→ [Phase 1] ──→ [Phase 2]
+   ↑                          |
+   └──────── [Phase 3] ←──────┘
+```
 
-💡 EXAM TIP:
-[One sharp specific tip in Hinglish for scoring marks on this exact topic in exam]
+FOR DEFINITIONS:
+```
+Term
+├── Meaning    → [clear explanation]
+├── Example    → [real life example]
+├── Used when  → [situation]
+└── Key fact   → [important point]
+```
 
+IMPORTANT: Always use triple backticks around visuals.
+Always make visuals topic-specific — never generic.
+
+---
+✅ **EXAM READY ANSWER:**
+Pure English only. No Hindi at all.
+Length: {info['words']}
+Style: {info['style']}
+
+Always format like this:
+
+**Definition:** [one clear precise sentence]
+
+**Key Points:**
+1. [point with brief explanation]
+2. [point with brief explanation]
+3. [point with brief explanation]
+4. [point with brief explanation]
+
+**Example:** [one relevant example]
+
+**Conclusion:** [one strong closing sentence]
+
+---
+💡 **EXAM TIP:**
+One sharp specific tip in simple English.
+Tell exactly what the examiner wants to see for full marks.
+
+---
 STRICT RULES:
 - Never skip any of the 4 sections
-- Visual must always be present and topic-relevant
-- Exam answer must always be pure English
-- Answer length must be exactly: {info['words']}
-- For QUIZ request: give 5 MCQs first → show score → then give full exam answer
-- Always be warm and encouraging like a good Indian teacher"""
+- Visual must always use triple backtick code blocks
+- Exam answer must always be pure structured English
+- Length must match: {info['words']}
+- For QUIZ request: give 5 MCQs → show score → then give full exam answer
+- Never use difficult Hindi words — keep language simple and clear
+- Always be warm, encouraging, and clear"""
 
 def generate_pdf(notes):
     pdf = FPDF()
@@ -298,9 +345,9 @@ if "notes" not in st.session_state:
 st.markdown('<div class="selector-card">', unsafe_allow_html=True)
 col1, col2 = st.columns(2)
 with col1:
-    level = st.selectbox("📊 Apna Level Choose Karo", list(LEVELS.keys()))
+    level = st.selectbox("📊 Select Your Level", list(LEVELS.keys()))
 with col2:
-    subject = st.selectbox("📚 Subject Choose Karo", SUBJECTS)
+    subject = st.selectbox("📚 Select Your Subject", SUBJECTS)
 st.markdown('</div>', unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns(3)
@@ -326,7 +373,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("Topic pucho, exam answer maango, ya 'quiz do' likho..."):
+if prompt := st.chat_input("Ask a topic, request an exam answer, or type 'give me a quiz'..."):
     full_prompt = f"Subject: {subject}\nLevel: {level}\nQuestion: {prompt}"
     st.session_state.messages.append({"role": "user", "content": prompt})
 
@@ -365,7 +412,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 col1, col2 = st.columns(2)
 
 with col1:
-    if st.button("🔄 Naya Topic Shuru Karo"):
+    if st.button("🔄 Start New Topic"):
         st.session_state.messages = []
         st.rerun()
 
@@ -373,7 +420,7 @@ with col2:
     if st.session_state.notes:
         pdf_data = generate_pdf(st.session_state.notes)
         st.download_button(
-            label="📥 PDF Notes Download Karo",
+            label="📥 Download PDF Notes",
             data=pdf_data,
             file_name=f"aadil_mentor_{subject.replace(' ', '_')}.pdf",
             mime="application/pdf"
@@ -381,6 +428,6 @@ with col2:
     else:
         st.markdown(
             '<p style="color:#8b949e;text-align:center;font-size:0.9rem">'
-            'Pehle koi question pucho — phir PDF download hogi!</p>',
+            'Ask a question first — then download your PDF notes!</p>',
             unsafe_allow_html=True
         )
