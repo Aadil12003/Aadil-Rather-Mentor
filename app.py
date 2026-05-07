@@ -283,11 +283,11 @@ def generate_pdf(notes):
 
     pdf.set_font("Helvetica", "B", 22)
     pdf.set_text_color(240, 192, 64)
-    pdf.cell(0, 15, "AADIL MENTOR - STUDY NOTES", ln=True, align="C")
+    pdf.cell(0, 15, "AADIL MENTOR - STUDY NOTES", new_x="LMARGIN", new_y="NEXT", align="C")
 
     pdf.set_font("Helvetica", "", 10)
     pdf.set_text_color(100, 100, 100)
-    pdf.cell(0, 8, "Your Personal AI Study Guide", ln=True, align="C")
+    pdf.cell(0, 8, "Your Personal AI Study Guide", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(5)
 
     pdf.set_draw_color(240, 192, 64)
@@ -299,21 +299,23 @@ def generate_pdf(notes):
         try:
             pdf.set_font("Helvetica", "B", 13)
             pdf.set_text_color(240, 192, 64)
-            subject_clean = note['subject'].encode(
-                'latin-1', 'replace').decode('latin-1')
-            pdf.cell(0, 10, f"NOTE {i}: {subject_clean}", ln=True)
+
+            # Use a robust replacement to ensure it falls within latin-1 or the font's supported characters
+            # or simply rely on FPDF's internal fallback. Since Helvetica is limited to Latin-1,
+            # we must replace unsupported unicode characters. Using 'replace' substitutes them with '?'.
+            subject_clean = str(note['subject']).encode('latin-1', 'replace').decode('latin-1')
+            pdf.cell(0, 10, f"NOTE {i}: {subject_clean}", new_x="LMARGIN", new_y="NEXT")
 
             pdf.set_font("Helvetica", "", 9)
             pdf.set_text_color(120, 120, 120)
-            pdf.cell(0, 6, f"Level: {note['level']}", ln=True)
+            pdf.cell(0, 6, f"Level: {note['level']}", new_x="LMARGIN", new_y="NEXT")
 
-            question_clean = note['question'].encode(
-                'latin-1', 'replace').decode('latin-1')
-            pdf.cell(0, 6, f"Q: {question_clean}", ln=True)
+            question_clean = str(note['question']).encode('latin-1', 'replace').decode('latin-1')
+            pdf.cell(0, 6, f"Q: {question_clean}", new_x="LMARGIN", new_y="NEXT")
             pdf.ln(3)
 
             # Clean answer properly
-            answer = note['answer']
+            answer = str(note['answer'])
             answer = re.sub(r'\*\*(.+?)\*\*', r'\1', answer)
             answer = re.sub(r'\*(.+?)\*', r'\1', answer)
             answer = answer.encode('latin-1', 'replace').decode('latin-1')
@@ -476,7 +478,7 @@ if prompt := st.chat_input("Ask a topic, request an exam answer, or type 'give m
                 chunk.choices[0].delta.content
                 for chunk in stream
                 if chunk.choices
-                and chunk.choices[0].delta.content
+                and chunk.choices[0].delta.content is not None
             )
 
             st.session_state.error_count = 0
