@@ -348,8 +348,6 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 if "notes" not in st.session_state:
     st.session_state.notes = []
-if "error_count" not in st.session_state:
-    st.session_state.error_count = 0
 if "last_request_time" not in st.session_state:
     st.session_state.last_request_time = 0
 
@@ -479,10 +477,7 @@ if prompt := st.chat_input("Ask a topic, request an exam answer, or type 'give m
                 and chunk.choices[0].delta.content
             )
 
-            st.session_state.error_count = 0
-
         except Exception as e:
-            st.session_state.error_count += 1
             error_str = str(e).lower()
 
             if "rate limit" in error_str or "429" in error_str:
